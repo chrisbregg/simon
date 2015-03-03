@@ -1,5 +1,6 @@
 package org.no_ip.chrisbregg.simon;
 
+import android.opengl.GLSurfaceView;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -7,11 +8,15 @@ import android.view.MenuItem;
 
 
 public class MainGameActivity extends ActionBarActivity {
+    private GLSurfaceView mGLView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_game);
+
+        mGLView = new SimonGLSurfaceView(this);
+
+        setContentView(mGLView);
     }
 
 
