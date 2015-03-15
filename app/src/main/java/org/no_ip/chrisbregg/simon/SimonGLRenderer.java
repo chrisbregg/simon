@@ -58,4 +58,11 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
 
         return shader;
     }
+
+    // the screen was touched at the given x/y coords
+    public void onTouch(float x, float y) {
+        mBoard.toggleQuadrant(0);
+
+
+    }
 }

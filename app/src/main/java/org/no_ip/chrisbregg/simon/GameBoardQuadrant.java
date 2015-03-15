@@ -42,7 +42,10 @@ public class GameBoardQuadrant {
 
     private short drawOrder[];
 
-    private float colour[];
+    private float onColour[];
+    private float offColour[];
+
+    private boolean isOn;
 
     private final int mProgram;
 
@@ -59,8 +62,12 @@ public class GameBoardQuadrant {
         setMinRads(minRads);
         setMaxRads(maxRads);
 
-        colour = new float[4];
-        setColour(0, 0, 0, 1); // default to black
+        isOn = false;
+
+        onColour = new float[4];
+        offColour = new float[4];
+        setOnColour(0, 0, 0, 1); // default to black
+        setOffColour(0, 0, 0, 1); // default to black
 
         generateCircleCoords();
         generateDrawOrder();
@@ -165,7 +172,11 @@ public class GameBoardQuadrant {
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
         // set color for drawing the triangle
-        GLES20.glUniform4fv(mColorHandle, 1, colour, 0);
+        if (isOn) {
+            GLES20.glUniform4fv(mColorHandle, 1, onColour, 0);
+        } else {
+            GLES20.glUniform4fv(mColorHandle, 1, offColour, 0);
+        }
 
         // get handle to shape's transformation matrix
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
@@ -178,6 +189,10 @@ public class GameBoardQuadrant {
 
         // disable the vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
+    }
+
+    public void toggleLight() {
+        isOn = !isOn;
     }
 
     public void setMinRads(float minRads) {
@@ -196,12 +211,21 @@ public class GameBoardQuadrant {
         }
     }
 
-    public void setColour(float r, float g, float b, float a) {
+    public void setOnColour(float r, float g, float b, float a) {
         if (r >= 0 && g >= 0 && b >= 0 && a >= 0) {
-            colour[0] = r;
-            colour[1] = g;
-            colour[2] = b;
-            colour[3] = a;
+            onColour[0] = r;
+            onColour[1] = g;
+            onColour[2] = b;
+            onColour[3] = a;
+        }
+    }
+
+    public void setOffColour(float r, float g, float b, float a) {
+        if (r >= 0 && g >= 0 && b >= 0 && a >= 0) {
+            offColour[0] = r;
+            offColour[1] = g;
+            offColour[2] = b;
+            offColour[3] = a;
         }
     }
 }
