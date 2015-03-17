@@ -32,12 +32,7 @@ public class SimonGLSurfaceView extends GLSurfaceView {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            try {
-                mRenderer.playPattern();
-            } catch (Exception e) {
-
-            }
-
+                mRenderer.onTouchEvent(event.getX(), event.getY());
         }
 
         return true;

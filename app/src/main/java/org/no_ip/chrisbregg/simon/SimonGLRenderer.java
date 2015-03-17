@@ -5,6 +5,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -24,6 +25,8 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
     private ArrayList<Integer> mPattern;
     private int mCurrentPatternStep = 0;
     private long mPatternStepStartTimeMillis = 0;
+
+    private Random mRand;
 
     private DRAW_STATE mCurrentDrawState = DRAW_STATE.DRAW_BOARD;
 
@@ -46,10 +49,8 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
         mBoard = new GameBoard();
 
         mPattern = new ArrayList<Integer>();
-        mPattern.add(0);
-        mPattern.add(2);
-        mPattern.add(1);
-        mPattern.add(3);
+
+        mRand = new Random();
     }
 
     @Override
@@ -78,7 +79,7 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
 
             case DRAW_PATTERN:
                 // The pattern step just started
-                if (mPatternStepStartTimeMillis == 0) {
+                if (mPatternStepStartTimeMillis == 0 && mCurrentPatternStep < mPattern.size()) {
                     mPatternStepStartTimeMillis = System.currentTimeMillis();
 
                     mBoard.toggleQuadrant(mPattern.get(mCurrentPatternStep));
@@ -103,13 +104,24 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
         }
     }
 
+    // Screen was touched at x,y coord
+    public void onTouchEvent(float x, float y) {
+        playPattern();
+
+        addRandomPatternItem();
+    }
+
+    public void addRandomPatternItem() {
+        addPatternItem(mRand.nextInt(mBoard.getQuadrantCount()));
+    }
+
     public void addPatternItem(Integer quadrant) {
         if (quadrant < mBoard.getQuadrantCount()) {
             mPattern.add(quadrant);
         }
     }
 
-    public void playPattern() throws InterruptedException {
+    public void playPattern() {
         mCurrentDrawState = DRAW_STATE.DRAW_PATTERN;
     }
 }
