@@ -2,14 +2,13 @@ package org.no_ip.chrisbregg.simon;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
 
 /**
  * Created by Chris on 2015-03-05.
  */
 public class GameBoard {
     private GameBoardQuadrant mQuadrants[];
-
-    private int currentQuad = 0;
 
     public GameBoard() {
         mQuadrants = new GameBoardQuadrant[4];
@@ -29,6 +28,8 @@ public class GameBoard {
         mQuadrants[3] = new GameBoardQuadrant((float)1.5 * (float)Math.PI, (float)2.0 * (float)Math.PI);
         mQuadrants[3].setOnColour(1.0f, 1.0f, 0.0f, 1.0f);
         mQuadrants[3].setOffColour(0.25f, 0.25f, 0.0f, 1.0f);
+
+
     }
 
     public void draw(float[] mvpMatrix) {
@@ -38,10 +39,14 @@ public class GameBoard {
     }
 
     public void toggleQuadrant(int x) {
-        mQuadrants[currentQuad++].toggleLight();
-
-        if (currentQuad >= mQuadrants.length) {
-            currentQuad = 0;
+        if (x < mQuadrants.length) {
+            mQuadrants[x].toggleLight();
         }
     }
+
+    public int getQuadrantCount() {
+        return mQuadrants.length;
+    }
+
+
 }

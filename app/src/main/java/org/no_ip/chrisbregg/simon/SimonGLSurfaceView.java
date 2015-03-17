@@ -3,6 +3,9 @@ package org.no_ip.chrisbregg.simon;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+
+import java.util.ArrayList;
 
 /**
  * Created by Chris on 2015-03-02.
@@ -21,17 +24,24 @@ public class SimonGLSurfaceView extends GLSurfaceView {
         setRenderer(mRenderer);
 
         // render only when told to
-        setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+
+
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            mRenderer.onTouch(event.getX(), event.getY());
+            try {
+                mRenderer.playPattern();
+            } catch (Exception e) {
 
-            requestRender();
+            }
+
         }
 
         return true;
     }
+
+
 }
