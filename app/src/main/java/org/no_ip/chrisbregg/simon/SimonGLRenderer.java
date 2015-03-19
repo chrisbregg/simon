@@ -1,5 +1,7 @@
 package org.no_ip.chrisbregg.simon;
 
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
@@ -21,7 +23,6 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
     private final float[] mViewMatrix = new float[16];
 
     private GameBoard mBoard;
-
     private ArrayList<Integer> mPattern;
     private int mCurrentPatternStep = 0;
     private long mPatternStepStartTimeMillis = 0;
@@ -51,6 +52,7 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
         mPattern = new ArrayList<Integer>();
 
         mRand = new Random();
+
     }
 
     @Override
@@ -78,12 +80,15 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
                 break;
 
             case DRAW_PATTERN:
-                // The pattern step just started
+                // The pattern step just started, turn the light on
                 if (mPatternStepStartTimeMillis == 0 && mCurrentPatternStep < mPattern.size()) {
                     mPatternStepStartTimeMillis = System.currentTimeMillis();
 
-                    mBoard.toggleQuadrant(mPattern.get(mCurrentPatternStep));
+                    int lightQuadrant = mPattern.get(mCurrentPatternStep);
+
+                    mBoard.toggleQuadrant(lightQuadrant);
                 } else if ((System.currentTimeMillis() - mPatternStepStartTimeMillis) >= 750) {
+                    // turn the light off
                     mBoard.toggleQuadrant(mPattern.get(mCurrentPatternStep++));
 
                     mPatternStepStartTimeMillis = 0;

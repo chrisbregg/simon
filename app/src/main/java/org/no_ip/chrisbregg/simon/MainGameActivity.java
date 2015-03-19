@@ -1,5 +1,6 @@
 package org.no_ip.chrisbregg.simon;
 
+import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -17,6 +18,8 @@ public class MainGameActivity extends ActionBarActivity {
         mGLView = new SimonGLSurfaceView(this);
 
         setContentView(mGLView);
+
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
 

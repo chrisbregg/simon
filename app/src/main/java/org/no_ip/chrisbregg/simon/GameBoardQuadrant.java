@@ -195,6 +195,10 @@ public class GameBoardQuadrant {
         isOn = !isOn;
     }
 
+    public boolean isOn() {
+        return isOn;
+    }
+
     public void setMinRads(float minRads) {
         if (minRads >= 0) {
             this.mMinRads = minRads;
