@@ -232,4 +232,30 @@ public class GameBoardQuadrant {
             offColour[3] = a;
         }
     }
+
+    // Determines if the given coords are inside this quadrant
+    public boolean isInsideQuadrant(float x, float y) {
+        double distanceFromCenter = Math.sqrt((x * x) + (y * y));
+
+        // If this coord pair is outside the max radius, it isn't inside the quadrant
+        if (distanceFromCenter > radius) {
+            return false;
+        }
+
+        // Find the radians to the given coord pair and determine if it is between the max and min radians
+        double radians = Math.atan(y / x);
+
+        // If in quadrant 2 or 3
+        if (x < 0) {
+            radians += Math.PI;
+        } else if (x > 0 && y < 0) {
+            radians += 2 * Math.PI;
+        }
+
+        if (mMinRads < radians && radians < mMaxRads) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
