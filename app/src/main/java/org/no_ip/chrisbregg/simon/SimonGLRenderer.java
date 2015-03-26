@@ -16,7 +16,7 @@ import javax.microedition.khronos.opengles.GL10;
 /**
  * Created by Chris on 2015-03-02.
  */
-public class SimonGLRenderer implements GLSurfaceView.Renderer {
+public class SimonGLRenderer implements GLSurfaceView.Renderer, SoundPlayer.SoundPlayerLoadCompleteListener {
     private enum DRAW_STATE { DRAW_PATTERN, DRAW_BOARD, PATTERN_COMPLETE, PATTERN_FAILED };
 
     private final float[] mMVPMatrix = new float[16];
@@ -41,6 +41,8 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
 
     private boolean gameStarted = false;
 
+    private SoundPlayer mSoundPlayer;
+
     public static int loadShader(int type, String shaderCode) {
         // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
         // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
@@ -54,8 +56,16 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
     }
 
     @Override
+    public void OnAudioLoadComplete() {
+        initPattern(); // start playing the pattern once the audio is loaded
+    }
+
+    @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+
+        mSoundPlayer = new SoundPlayer();
+        mSoundPlayer.setOnLoadCompleteListener(this);
 
         mRand = new Random();
         mBoard = new GameBoard();
@@ -96,10 +106,10 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
 
                     int lightQuadrant = mPattern.get(mCurrentPatternStep);
 
-                    mBoard.toggleQuadrant(lightQuadrant);
+                    toggleQuadrant(lightQuadrant);
                 } else if ((System.currentTimeMillis() - mPatternStepStartTimeMillis) >= 750) {
                     // turn the light off
-                    mBoard.toggleQuadrant(mPattern.get(mCurrentPatternStep++));
+                    toggleQuadrant(mPattern.get(mCurrentPatternStep++));
 
                     mPatternStepStartTimeMillis = 0;
 
@@ -156,7 +166,7 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
         if (!gameStarted) {
             return;
         }
-        
+
         if (mCurrentDrawState == DRAW_STATE.DRAW_BOARD &&
                 (event.getAction() == MotionEvent.ACTION_DOWN)) {
             float normalX = getNormalizedXCoord(event.getX());
@@ -167,11 +177,11 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
             lastToggled = selectedQuadrant;
 
             if (selectedQuadrant != -1) {
-                mBoard.toggleQuadrant(selectedQuadrant);
+                toggleQuadrant(selectedQuadrant);
             }
         } else if (mCurrentDrawState == DRAW_STATE.DRAW_BOARD &&
                 event.getAction() == MotionEvent.ACTION_UP) {
-            mBoard.toggleQuadrant(lastToggled);
+            toggleQuadrant(lastToggled);
 
             if (lastToggled == mPattern.get(patternLoc)) {
                 patternLoc++;
@@ -224,5 +234,30 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
 
     public void playPattern() {
         mCurrentDrawState = DRAW_STATE.DRAW_PATTERN;
+    }
+
+    public void toggleQuadrant(int x) {
+        if (mBoard.toggleQuadrant(x)) {
+            switch (x) {
+                case 0:
+                    mSoundPlayer.playSound(SoundPlayer.RED_TONE);
+                    break;
+
+                case 1:
+                    mSoundPlayer.playSound(SoundPlayer.BLUE_TONE);
+                    break;
+
+                case 2:
+                    mSoundPlayer.playSound(SoundPlayer.YELLOW_TONE);
+                    break;
+
+                case 3:
+                    mSoundPlayer.playSound(SoundPlayer.GREEN_TONE);
+                    break;
+
+                default:
+                    // don't play a sound
+            }
+        }
     }
 }

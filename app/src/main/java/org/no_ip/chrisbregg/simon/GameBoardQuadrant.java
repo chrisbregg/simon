@@ -191,8 +191,9 @@ public class GameBoardQuadrant {
         GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
 
-    public void toggleLight() {
+    public boolean toggleLight() {
         isOn = !isOn;
+        return isOn;
     }
 
     public boolean isOn() {

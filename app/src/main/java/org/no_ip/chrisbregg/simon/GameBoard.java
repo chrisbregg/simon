@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class GameBoard {
     private GameBoardQuadrant mQuadrants[];
 
-    private SoundPlayer mSoundPlayer;
+
 
     public GameBoard() {
         mQuadrants = new GameBoardQuadrant[4];
@@ -30,8 +30,6 @@ public class GameBoard {
         mQuadrants[3] = new GameBoardQuadrant((float)1.5 * (float)Math.PI, (float)2.0 * (float)Math.PI);
         mQuadrants[3].setOnColour(1.0f, 1.0f, 0.0f, 1.0f);
         mQuadrants[3].setOffColour(0.25f, 0.25f, 0.0f, 1.0f);
-
-        mSoundPlayer = new SoundPlayer();
     }
 
     public void draw(float[] mvpMatrix) {
@@ -40,33 +38,11 @@ public class GameBoard {
         }
     }
 
-    public void toggleQuadrant(int x) {
+    public boolean toggleQuadrant(int x) {
         if (x < mQuadrants.length && x >= 0) {
-            mQuadrants[x].toggleLight();
-
-            if (mQuadrants[x].isOn()) {
-                switch (x) {
-                    case 0:
-                        mSoundPlayer.playSound(SoundPlayer.RED_TONE);
-                        break;
-
-                    case 1:
-                        mSoundPlayer.playSound(SoundPlayer.BLUE_TONE);
-                        break;
-
-                    case 2:
-                        mSoundPlayer.playSound(SoundPlayer.YELLOW_TONE);
-                        break;
-
-                    case 3:
-                        mSoundPlayer.playSound(SoundPlayer.GREEN_TONE);
-                        break;
-
-                    default:
-                        // don't play a sound
-                }
-            }
-
+            return mQuadrants[x].toggleLight();
+        } else {
+            return false;
         }
     }
 
