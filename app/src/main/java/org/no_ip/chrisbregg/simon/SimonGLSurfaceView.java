@@ -14,6 +14,8 @@ import java.util.ArrayList;
  * Created by Chris on 2015-03-02.
  */
 public class SimonGLSurfaceView extends GLSurfaceView {
+    public enum UserAction { ACTION_START };
+
     private SimonGLRenderer mRenderer;
 
     public SimonGLSurfaceView(Context context) {
@@ -39,5 +41,9 @@ public class SimonGLSurfaceView extends GLSurfaceView {
         return true;
     }
 
-
+    public void actionBar(UserAction action) {
+        if (action == UserAction.ACTION_START) {
+            mRenderer.initPattern();
+        }
+    }
 }

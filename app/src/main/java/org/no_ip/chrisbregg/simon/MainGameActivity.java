@@ -1,15 +1,17 @@
 package org.no_ip.chrisbregg.simon;
 
+import android.app.Activity;
 import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
-import android.support.v7.app.ActionBarActivity;
+import android.app.ActionBar;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 
 public class MainGameActivity extends ActionBarActivity {
-    private GLSurfaceView mGLView;
+    private SimonGLSurfaceView mGLView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +29,7 @@ public class MainGameActivity extends ActionBarActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main_game, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -38,7 +40,9 @@ public class MainGameActivity extends ActionBarActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_start) {
+            mGLView.actionBar(SimonGLSurfaceView.UserAction.ACTION_START);
+
             return true;
         }
 

@@ -17,7 +17,7 @@ import javax.microedition.khronos.opengles.GL10;
  * Created by Chris on 2015-03-02.
  */
 public class SimonGLRenderer implements GLSurfaceView.Renderer {
-    private enum DRAW_STATE { DRAW_PATTERN, DRAW_BOARD };
+    private enum DRAW_STATE { DRAW_PATTERN, DRAW_BOARD, PATTERN_COMPLETE, PATTERN_FAILED };
 
     private final float[] mMVPMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
@@ -37,6 +37,9 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
     private float mRatio;
 
     private int lastToggled;
+    private int patternLoc = 0; // where in the pattern are we for player playback
+
+    private boolean gameStarted = false;
 
     public static int loadShader(int type, String shaderCode) {
         // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
@@ -54,12 +57,8 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
-        mBoard = new GameBoard();
-
-        mPattern = new ArrayList<Integer>();
-
         mRand = new Random();
-
+        mBoard = new GameBoard();
     }
 
     @Override
@@ -114,6 +113,37 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
                 mBoard.draw(mMVPMatrix);
                 break;
 
+            case PATTERN_COMPLETE:
+                if (mPatternStepStartTimeMillis == 0) {
+                    // Start a timer, but don't do anything else for a moment
+
+                    mPatternStepStartTimeMillis = System.currentTimeMillis();
+                } else if ((System.currentTimeMillis() - mPatternStepStartTimeMillis) >= 750) {
+                    mPatternStepStartTimeMillis = 0; // reset the timer
+
+                    // After a brief pause, make the pattern harder and play it
+                    addRandomPatternItem();
+                    playPattern();
+                }
+
+                mBoard.draw(mMVPMatrix);
+                break;
+
+            case PATTERN_FAILED:
+                if (mPatternStepStartTimeMillis == 0) {
+                    // Start a timer, but don't do anything else for a moment
+
+                    mPatternStepStartTimeMillis = System.currentTimeMillis();
+                } else if ((System.currentTimeMillis() - mPatternStepStartTimeMillis) >= 750) {
+                    mPatternStepStartTimeMillis = 0; // reset the timer
+
+                    // After a brief pause, reset the game
+                    initPattern();
+                }
+
+                mBoard.draw(mMVPMatrix);
+                break;
+
             default:
                 mBoard.draw(mMVPMatrix);
                 break;
@@ -122,6 +152,11 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
 
     // Screen was touched at x,y coord
     public void onTouchEvent(MotionEvent event) {
+        // Don't acknowledge a interaction unless the game has already started
+        if (!gameStarted) {
+            return;
+        }
+        
         if (mCurrentDrawState == DRAW_STATE.DRAW_BOARD &&
                 (event.getAction() == MotionEvent.ACTION_DOWN)) {
             float normalX = getNormalizedXCoord(event.getX());
@@ -133,13 +168,34 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer {
 
             if (selectedQuadrant != -1) {
                 mBoard.toggleQuadrant(selectedQuadrant);
-
-                //playPattern();
-                //addRandomPatternItem();
             }
-        } if (event.getAction() == MotionEvent.ACTION_UP) {
+        } else if (mCurrentDrawState == DRAW_STATE.DRAW_BOARD &&
+                event.getAction() == MotionEvent.ACTION_UP) {
             mBoard.toggleQuadrant(lastToggled);
+
+            if (lastToggled == mPattern.get(patternLoc)) {
+                patternLoc++;
+            } else if (lastToggled != -1) {
+                // if a quadrant was actually selected
+                mCurrentDrawState = DRAW_STATE.PATTERN_FAILED;
+            }
+
+            if (patternLoc == mPattern.size()) {
+                mCurrentDrawState = DRAW_STATE.PATTERN_COMPLETE;
+                patternLoc = 0;
+            }
         }
+    }
+
+    public void initPattern() {
+        mPattern = new ArrayList<Integer>();
+
+        patternLoc = 0;
+
+        addRandomPatternItem();
+        playPattern();
+
+        gameStarted = true;
     }
 
     // Convert the given screen x-coord to normalized coords
