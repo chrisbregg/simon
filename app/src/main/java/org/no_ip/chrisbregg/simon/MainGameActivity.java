@@ -11,13 +11,26 @@ import android.view.MenuItem;
 
 
 public class MainGameActivity extends ActionBarActivity {
+    public static final int GAME_MODE_CLASSIC = 1;
+    public static final int GAME_MODE_REVERSE = 2;
+
+    public static final String GAME_MODE_TAG = "GameMode";
+
     private SimonGLSurfaceView mGLView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mGLView = new SimonGLSurfaceView(this);
+        Bundle extras = getIntent().getExtras();
+
+        int mode = 0;
+
+        if (extras != null) {
+            mode = extras.getInt(GAME_MODE_TAG);
+        }
+
+        mGLView = new SimonGLSurfaceView(this, mode);
 
         setContentView(mGLView);
 

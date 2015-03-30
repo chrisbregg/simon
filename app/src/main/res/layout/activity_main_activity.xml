@@ -8,8 +8,22 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Start Game"
+        android:text="Classic Game"
         android:id="@+id/button_start"
         android:layout_gravity="center"
         android:onClick="button_start_onClick" />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Reverse Mode"
+        android:id="@+id/button_startReverse"
+        android:layout_gravity="center"
+        android:onClick="button_startReverse_onClick" />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Instructions"
+        android:id="@+id/button_instructions"
+        android:layout_gravity="center"
+        android:onClick="button_instructions_onClick" />
 </LinearLayout>

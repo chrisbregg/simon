@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.view.MotionEvent;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -17,7 +18,7 @@ import javax.microedition.khronos.opengles.GL10;
  * Created by Chris on 2015-03-02.
  */
 public class SimonGLRenderer implements GLSurfaceView.Renderer, SoundPlayer.SoundPlayerLoadCompleteListener {
-    private enum DRAW_STATE { DRAW_PATTERN, DRAW_BOARD, PATTERN_COMPLETE, PATTERN_FAILED };
+    private enum DRAW_STATE { DRAW_PATTERN, DRAW_BOARD, PATTERN_COMPLETE, PATTERN_FAILED, GAME_INIT };
 
     private final float[] mMVPMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
@@ -43,6 +44,12 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer, SoundPlayer.Soun
 
     private SoundPlayer mSoundPlayer;
 
+    private int mGameMode;
+
+    public SimonGLRenderer(int gameMode) {
+        setGameMode(gameMode);
+    }
+
     public static int loadShader(int type, String shaderCode) {
         // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
         // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
@@ -62,7 +69,7 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer, SoundPlayer.Soun
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+        GLES20.glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
         mSoundPlayer = new SoundPlayer();
         mSoundPlayer.setOnLoadCompleteListener(this);
@@ -100,24 +107,28 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer, SoundPlayer.Soun
                 break;
 
             case DRAW_PATTERN:
-                // The pattern step just started, turn the light on
-                if (mPatternStepStartTimeMillis == 0 && mCurrentPatternStep < mPattern.size()) {
-                    mPatternStepStartTimeMillis = System.currentTimeMillis();
+                try {
+                    // The pattern step just started, turn the light on
+                    if (mPatternStepStartTimeMillis == 0 && mCurrentPatternStep < mPattern.size()) {
+                        mPatternStepStartTimeMillis = System.currentTimeMillis();
 
-                    int lightQuadrant = mPattern.get(mCurrentPatternStep);
+                        int lightQuadrant = mPattern.get(mCurrentPatternStep);
 
-                    toggleQuadrant(lightQuadrant);
-                } else if ((System.currentTimeMillis() - mPatternStepStartTimeMillis) >= 750) {
-                    // turn the light off
-                    toggleQuadrant(mPattern.get(mCurrentPatternStep++));
+                        toggleQuadrant(lightQuadrant);
+                    } else if ((System.currentTimeMillis() - mPatternStepStartTimeMillis) >= 750) {
+                        // turn the light off
+                        toggleQuadrant(mPattern.get(mCurrentPatternStep++));
 
-                    mPatternStepStartTimeMillis = 0;
+                        mPatternStepStartTimeMillis = 0;
 
-                    // if we just completed the last step in the pattern, reset to simply drawing the board
-                    if (mCurrentPatternStep >= mPattern.size()) {
-                        mCurrentPatternStep = 0;
-                        mCurrentDrawState = DRAW_STATE.DRAW_BOARD;
+                        // if we just completed the last step in the pattern, reset to simply drawing the board
+                        if (mCurrentPatternStep >= mPattern.size()) {
+                            mCurrentPatternStep = 0;
+                            mCurrentDrawState = DRAW_STATE.DRAW_BOARD;
+                        }
                     }
+                } catch (IndexOutOfBoundsException ex) {
+
                 }
 
                 mBoard.draw(mMVPMatrix);
@@ -147,10 +158,17 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer, SoundPlayer.Soun
                 } else if ((System.currentTimeMillis() - mPatternStepStartTimeMillis) >= 750) {
                     mPatternStepStartTimeMillis = 0; // reset the timer
 
-                    // After a brief pause, reset the game
-                    initPattern();
+                    // Light up all the lights so that the player knows the game is over
+                    for (int x = 0; x < mBoard.getQuadrantCount(); x++) {
+                        mBoard.toggleQuadrant(x);
+                    }
                 }
 
+                mBoard.draw(mMVPMatrix);
+                break;
+
+            case GAME_INIT:
+                init();
                 mBoard.draw(mMVPMatrix);
                 break;
 
@@ -183,7 +201,20 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer, SoundPlayer.Soun
                 event.getAction() == MotionEvent.ACTION_UP) {
             toggleQuadrant(lastToggled);
 
-            if (lastToggled == mPattern.get(patternLoc)) {
+            int comparePatternQuadrant = -1;
+
+            if (mGameMode == MainGameActivity.GAME_MODE_CLASSIC) {
+                comparePatternQuadrant = mPattern.get(patternLoc);
+            } else if (mGameMode == MainGameActivity.GAME_MODE_REVERSE) {
+                // adjust for 0 based array
+                comparePatternQuadrant = mPattern.get(mPattern.size() - patternLoc - 1);
+            }
+
+            if (comparePatternQuadrant == -1) {
+                throw new InvalidParameterException();
+            }
+
+            if (lastToggled == comparePatternQuadrant) {
                 patternLoc++;
             } else if (lastToggled != -1) {
                 // if a quadrant was actually selected
@@ -198,9 +229,14 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer, SoundPlayer.Soun
     }
 
     public void initPattern() {
+        mCurrentDrawState = DRAW_STATE.GAME_INIT;
+    }
+
+    private void init() {
         mPattern = new ArrayList<Integer>();
 
         patternLoc = 0;
+        mCurrentPatternStep = 0;
 
         addRandomPatternItem();
         playPattern();
@@ -233,6 +269,13 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer, SoundPlayer.Soun
     }
 
     public void playPattern() {
+        for (int x = 0; x < mBoard.getQuadrantCount(); x++) {
+            // Make sure all the lights are off before starting the pattern
+            mBoard.toggleQuadrant(x, false);
+        }
+
+        mPatternStepStartTimeMillis = 0; // initialize the pattern timer
+
         mCurrentDrawState = DRAW_STATE.DRAW_PATTERN;
     }
 
@@ -259,5 +302,9 @@ public class SimonGLRenderer implements GLSurfaceView.Renderer, SoundPlayer.Soun
                     // don't play a sound
             }
         }
+    }
+
+    public void setGameMode(int gameMode) {
+        mGameMode = gameMode;
     }
 }

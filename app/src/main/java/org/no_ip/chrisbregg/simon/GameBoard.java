@@ -46,6 +46,12 @@ public class GameBoard {
         }
     }
 
+    public void toggleQuadrant(int quadrantNum, boolean state) {
+        if (quadrantNum < mQuadrants.length && quadrantNum >= 0) {
+            mQuadrants[quadrantNum].toggleLight(state);
+        }
+    }
+
     // Get the quadrant that contains the given coord pair
     // returns -1 if not inside the board
     public int getQuadrantXY(float x, float y) {

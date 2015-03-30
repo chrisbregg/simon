@@ -18,13 +18,13 @@ public class SimonGLSurfaceView extends GLSurfaceView {
 
     private SimonGLRenderer mRenderer;
 
-    public SimonGLSurfaceView(Context context) {
+    public SimonGLSurfaceView(Context context, int gameMode) {
         super(context);
 
         // create an opengl es 2.0 context
         setEGLContextClientVersion(2);
 
-        mRenderer = new SimonGLRenderer();
+        mRenderer = new SimonGLRenderer(gameMode);
 
         setRenderer(mRenderer);
 

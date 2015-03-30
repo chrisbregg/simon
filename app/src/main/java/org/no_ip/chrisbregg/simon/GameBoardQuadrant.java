@@ -196,6 +196,11 @@ public class GameBoardQuadrant {
         return isOn;
     }
 
+    public boolean toggleLight(boolean state) {
+        isOn = state;
+        return isOn;
+    }
+
     public boolean isOn() {
         return isOn;
     }

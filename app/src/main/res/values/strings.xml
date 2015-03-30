@@ -3,4 +3,11 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_start">Start</string>
+    <string name="title_activity_instructions">Instructions</string>
+    <string name="action_settings">Settings</string>
+    <string name="classic">Classic</string>
+    <string name="classic_instructions">In classic mode you will see a pattern of lights and sounds. Your goal is to play back the pattern exactly as presented.</string>
+    <string name="reverse">Reverse</string>
+    <string name="reverse_instructions">In reverse mode you will see a pattern of lights and sounds. Your goal is to play the pattern backwards. This means that if you see the pattern
+    red, blue, green, you should play back green, blue, red</string>
 </resources>

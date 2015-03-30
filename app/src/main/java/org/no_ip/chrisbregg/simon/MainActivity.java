@@ -20,6 +20,20 @@ public class MainActivity extends ActionBarActivity {
 
     public void button_start_onClick(View view) {
         Intent intent = new Intent(this, MainGameActivity.class);
+        intent.putExtra(MainGameActivity.GAME_MODE_TAG, MainGameActivity.GAME_MODE_CLASSIC);
+
+        startActivity(intent);
+    }
+
+    public void button_instructions_onClick(View view) {
+        Intent intent = new Intent(this, InstructionsActivity.class);
+
+        startActivity(intent);
+    }
+
+    public void button_startReverse_onClick(View view) {
+        Intent intent = new Intent(this, MainGameActivity.class);
+        intent.putExtra(MainGameActivity.GAME_MODE_TAG, MainGameActivity.GAME_MODE_REVERSE);
 
         startActivity(intent);
     }
